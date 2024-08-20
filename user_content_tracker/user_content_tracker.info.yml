@@ -1,0 +1,7 @@
+name: 'User Content Tracker'
+type: module
+description: 'Tracks user logins and displays content created by the logged-in user.'
+core_version_requirement: ^10
+package: Custom
+dependencies:
+  - drupal:views
