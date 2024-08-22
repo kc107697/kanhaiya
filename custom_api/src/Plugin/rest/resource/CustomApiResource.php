@@ -25,8 +25,16 @@ class CustomApiResource extends ResourceBase {
    */
   public function get() {
     $service = \Drupal::service('custom_api.custom_service');
-    $data = $service->getDataFromTable();
-
-    return new ResourceResponse($data);
+    $results = $service->getDataFromTable();
+    foreach ($results as $key => $record) {
+      $data[$key]['id'] = $record->id;
+      $data[$key]['name'] = $record->name;
+      $data[$key]['data']['color'] = $record->color;
+      $data[$key]['data']['capacity'] = $record->capacity;
+    }
+    $response['data'] = $data;
+   // $response = ['message' => 'Hello, this is a rest service'];
+    return new ResourceResponse($response);
+   
   }
 }

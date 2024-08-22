@@ -17,6 +17,6 @@ class CustomApiService {
       ->fields('c')
       ->execute();
     
-    return $query->fetchAllAssoc('id');
+    return $query->fetchAll();
   }
 }

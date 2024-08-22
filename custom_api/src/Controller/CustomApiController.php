@@ -21,18 +21,9 @@ class CustomApiController extends ControllerBase {
       foreach ($data as $item) {
         // Validate and sanitize data before insertion.
         $id = isset($item['id']) ? (int) $item['id'] : NULL;
-        $name = isset($item['name']) ? filter_var($item['name'], FILTER_SANITIZE_STRING) : '';
-        // $color = isset($item['data']['color']) ? filter_var($item['data']['color'], FILTER_SANITIZE_STRING) : 'unknown';// Default value if color is missing
-        // $capacity = isset($item['data']['capacity']) ? (int) $item['data']['capacity'] : 0; // Default value if capacity is missing
-
-        // Handle case-sensitive fields for both "color" and "Color"
-
-        $color = isset($item['data']['color']) ? filter_var($item['data']['color'], FILTER_SANITIZE_STRING) :
-                 (isset($item['data']['Color']) ? filter_var($item['data']['Color'], FILTER_SANITIZE_STRING) : 'unknown'); // Default to 'unknown' if both are missing
-
-
-        // Handle case-sensitive fields for both "capacity" and "Capacity"
-
+        $name = isset($item['name']) ? filter_var($item['name']) : '';
+        $color = isset($item['data']['color']) ? filter_var($item['data']['color']) :
+                 (isset($item['data']['Color']) ? filter_var($item['data']['Color']) : 'unknown'); // Default to 'unknown' if both are missing
         $capacity = isset($item['data']['capacity']) ? (int) $item['data']['capacity'] :
                     (isset($item['data']['Capacity']) ? (int) $item['data']['Capacity'] : 0); // Default to 0 if both are missing
 
