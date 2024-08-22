@@ -1,0 +1,6 @@
+services:
+  custom_api.custom_service:
+    class: Drupal\custom_api\Service\CustomApiService
+    arguments: ['@database']
+    tags:
+      - { name: 'service' }

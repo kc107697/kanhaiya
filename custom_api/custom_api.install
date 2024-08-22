@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function custom_api_schema() {
+  $schema['custom_table'] = array(
+    'description' => 'Custom table to store API data.',
+    'fields' => array(
+      'id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The primary identifier of the data.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The name of the object.',
+      ),
+      'color' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'description' => 'The color of the object.',
+      ),
+      'capacity' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'description' => 'The capacity of the object.',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_post_update_NAME().
+ */
+function custom_api_post_update_create_custom_table() {
+  // Create the table.
+  \Drupal::database()->schema()->createTable('custom_table', custom_api_schema()['custom_table']);
+}
