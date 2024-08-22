@@ -1,0 +1,7 @@
+custom_api.fetch_data:
+  path: '/api/custom/fetch-data'
+  defaults:
+    _controller: 'Drupal\custom_api\Controller\CustomApiController::fetchData'
+    _title: 'Fetch Data'
+  requirements:
+    _permission: 'access content'
