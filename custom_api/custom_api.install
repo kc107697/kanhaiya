@@ -1,38 +1,42 @@
 <?php
 
 /**
+ * @file
+ */
+
+/**
  * Implements hook_schema().
  */
 function custom_api_schema() {
-  $schema['custom_table'] = array(
+  $schema['custom_table'] = [
     'description' => 'Custom table to store API data.',
-    'fields' => array(
-      'id' => array(
+    'fields' => [
+      'id' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'description' => 'The primary identifier of the data.',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'The name of the object.',
-      ),
-      'color' => array(
+      ],
+      'color' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => FALSE,
         'description' => 'The color of the object.',
-      ),
-      'capacity' => array(
+      ],
+      'capacity' => [
         'type' => 'int',
         'not null' => FALSE,
         'description' => 'The capacity of the object.',
-      ),
-    ),
-    'primary key' => array('id'),
-  );
+      ],
+    ],
+    'primary key' => ['id'],
+  ];
 
   return $schema;
 }

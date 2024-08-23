@@ -4,8 +4,6 @@ namespace Drupal\custom_api\Plugin\rest\resource;
 
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Provides a Custom REST resource.
@@ -33,8 +31,9 @@ class CustomApiResource extends ResourceBase {
       $data[$key]['data']['capacity'] = $record->capacity;
     }
     $response['data'] = $data;
-   // $response = ['message' => 'Hello, this is a rest service'];
+    // $response = ['message' => 'Hello, this is a rest service'];
     return new ResourceResponse($response);
-   
+
   }
+
 }
