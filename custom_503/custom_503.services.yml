@@ -1,0 +1,6 @@
+services:
+  custom_503.exception_subscriber:
+    class: Drupal\custom_503\EventSubscriber\ExceptionSubscriber
+    arguments: ['@renderer', '@theme.manager', '@logger.factory']
+    tags:
+      - { name: event_subscriber }
