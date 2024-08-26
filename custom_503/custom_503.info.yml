@@ -1,0 +1,5 @@
+name: 'Custom 503 Service Unavailable'
+type: module
+description: '503 error using a custom controller and event subscriber.'
+package: Custom
+core_version_requirement: ^10

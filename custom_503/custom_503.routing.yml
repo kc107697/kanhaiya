@@ -1,0 +1,7 @@
+custom_503.service_unavailable:
+  path: '/service-unavailable'
+  defaults:
+    _controller: '\Drupal\custom_503\Controller\ServiceUnavailableController::serviceUnavailable'
+    _title: 'Service Unavailable'
+  requirements:
+    _permission: 'access content'
