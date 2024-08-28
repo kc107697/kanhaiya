@@ -13,7 +13,7 @@ use Drupal\rest\ResourceResponse;
  *   label = @Translation("Custom API Resource"),
  *   uri_paths = {
  *     "canonical" = "/api/cms/restpath"
- * }
+ *   }
  * )
  */
 class CustomApiResource extends ResourceBase {
@@ -23,17 +23,17 @@ class CustomApiResource extends ResourceBase {
    */
   public function get() {
     $service = \Drupal::service('custom_api.custom_service');
-    $results = $service->getDataFromTable();
+    $results = $service->getDataFromCacheOrDb();
+
+    $data = [];
     foreach ($results as $key => $record) {
       $data[$key]['id'] = $record->id;
       $data[$key]['name'] = $record->name;
       $data[$key]['data']['color'] = $record->color;
       $data[$key]['data']['capacity'] = $record->capacity;
     }
-    $response['data'] = $data;
-    // $response = ['message' => 'Hello, this is a rest service'];
-    return new ResourceResponse($response);
 
+    return new ResourceResponse(['data' => $data]);
   }
 
 }

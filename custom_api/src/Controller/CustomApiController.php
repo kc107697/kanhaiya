@@ -14,25 +14,17 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class CustomApiController extends ControllerBase {
 
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
   protected $database;
 
   /**
-   * CustomApiController constructor.
    *
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database service.
    */
   public function __construct(Connection $database) {
     $this->database = $database;
   }
 
   /**
-   * {@inheritdoc}
+   *
    */
   public static function create(ContainerInterface $container) {
     return new static(
@@ -41,7 +33,7 @@ class CustomApiController extends ControllerBase {
   }
 
   /**
-   * Fetch data from external API and insert into the database.
+   *
    */
   public function fetchData() {
     $client = new Client();
@@ -50,7 +42,6 @@ class CustomApiController extends ControllerBase {
 
     if (!empty($data)) {
       foreach ($data as $item) {
-        // Validate and sanitize data before insertion.
         $id = isset($item['id']) ? (int) $item['id'] : NULL;
         $name = isset($item['name']) ? filter_var($item['name']) : '';
         $color = isset($item['data']['color']) ? filter_var($item['data']['color']) :
@@ -58,7 +49,6 @@ class CustomApiController extends ControllerBase {
         $capacity = isset($item['data']['capacity']) ? (int) $item['data']['capacity'] :
                     (isset($item['data']['Capacity']) ? (int) $item['data']['Capacity'] : 0);
 
-        // Insert or update data in the table.
         if ($id !== NULL) {
           $this->database->merge('custom_table')
             ->keys(['id' => $id])
@@ -78,8 +68,13 @@ class CustomApiController extends ControllerBase {
 
       $fetched_data = $query->fetchAllAssoc('id');
 
+      // Enqueue the task to invalidate and update the cache.
+      $queue = \Drupal::service('queue')->get('custom_api_queue_worker');
+      $queue->createItem(['invalidate_cache' => TRUE]);
+
       // Return the fetched data in JSON response.
       return new JsonResponse($fetched_data);
+      // Return new JsonResponse(['message' => 'Data fetched and processed successfully.']);.
     }
 
     return new JsonResponse(['error' => 'Failed to fetch data.'], Response::HTTP_INTERNAL_SERVER_ERROR);
