@@ -1,0 +1,17 @@
+services:
+  custom_api.custom_service:
+    class: Drupal\custom_api\Service\CustomApiService
+    arguments: ['@database', '@cache.custom_api']
+    tags:
+      - { name: 'service' }
+
+  cache.custom_api:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    factory: cache_factory:get
+    arguments: ['custom_api']
+
+  custom_api.queue_worker.custom_api:
+    class: Drupal\custom_api\Plugin\QueueWorker\CustomApiQueueWorker
+    arguments: ['@custom_api.custom_service']
+    tags:
+      - { name: 'queue_worker' }
