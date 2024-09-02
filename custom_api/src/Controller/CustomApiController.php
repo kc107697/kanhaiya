@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Drupal\Core\Queue\QueueFactory;
 
 /**
  * Custom API Controller to fetch and store data.
@@ -15,25 +16,28 @@ use Symfony\Component\HttpFoundation\Response;
 class CustomApiController extends ControllerBase {
 
   protected $database;
+  protected $queueFactory;
 
   /**
-   *
+   * {@inheritdoc}
    */
-  public function __construct(Connection $database) {
+  public function __construct(Connection $database, QueueFactory $queue_factory) {
     $this->database = $database;
+    $this->queueFactory = $queue_factory;
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('database')
+      $container->get('database'),
+      $container->get('queue')
     );
   }
 
   /**
-   *
+   * Fetches data from external API and stores it in the database.
    */
   public function fetchData() {
     $client = new Client();
@@ -47,7 +51,7 @@ class CustomApiController extends ControllerBase {
         $color = isset($item['data']['color']) ? filter_var($item['data']['color']) :
                  (isset($item['data']['Color']) ? filter_var($item['data']['Color']) : 'unknown');
         $capacity = isset($item['data']['capacity']) ? (int) $item['data']['capacity'] :
-                    (isset($item['data']['Capacity']) ? (int) $item['data']['Capacity'] : 0);
+                   (isset($item['data']['Capacity']) ? (int) $item['data']['Capacity'] : 0);
 
         if ($id !== NULL) {
           $this->database->merge('custom_table')
@@ -61,23 +65,14 @@ class CustomApiController extends ControllerBase {
         }
       }
 
-      // After inserting, fetch all data from the database.
-      $query = $this->database->select('custom_table', 'c')
-        ->fields('c', ['id', 'name', 'color', 'capacity'])
-        ->execute();
-
-      $fetched_data = $query->fetchAllAssoc('id');
-
-      // Enqueue the task to invalidate and update the cache.
-      $queue = \Drupal::service('queue')->get('custom_api_queue_worker');
+      // Enqueue the task to invalidate the cache.
+      $queue = $this->queueFactory->get('custom_api_queue_worker');
       $queue->createItem(['invalidate_cache' => TRUE]);
 
       // Return the fetched data in JSON response.
-      return new JsonResponse($fetched_data);
-      // Return new JsonResponse(['message' => 'Data fetched and processed successfully.']);.
+      return new JsonResponse($data);
     }
 
     return new JsonResponse(['error' => 'Failed to fetch data.'], Response::HTTP_INTERNAL_SERVER_ERROR);
   }
-
 }
