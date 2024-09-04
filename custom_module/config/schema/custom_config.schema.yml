@@ -1,0 +1,16 @@
+custom_config.settings:
+  type: config_object
+  label: 'Custom Config Settings'
+  mapping:
+    name:
+      type: string
+      label: 'Company Name'
+    company_id:
+      type: string
+      label: 'Company ID'
+    location:
+      type: string
+      label: 'Location'
+    sector:
+      type: string
+      label: 'Sector'

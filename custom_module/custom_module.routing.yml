@@ -1,0 +1,7 @@
+custom_module.custom_select_form:
+  path: '/custom-select'
+  defaults:
+    _form: '\Drupal\custom_module\Form\CustomSelectForm'
+    _title: 'Select Company Details'
+  requirements:
+    _permission: 'access content'

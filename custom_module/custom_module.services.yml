@@ -1,0 +1,6 @@
+services:
+  custom_module.custom_config_commands:
+    class: Drupal\custom_module\Commands\CustomConfigCommands
+    arguments: ['@config.factory']
+    tags:
+      - { name: drush.command }

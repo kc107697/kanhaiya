@@ -1,0 +1,32 @@
+<?php
+
+use Drupal\Core\Database\SchemaObject;
+
+function user_content_tracker_install() {
+  // Define the schema for the table.
+  $schema = \Drupal::database()->schema();
+
+  // Create the 'user_login_details' table.
+  if (!$schema->tableExists('user_login_details')) {
+    $schema->createTable('user_login_details', [
+      'fields' => [
+        'id' => [
+          'type' => 'serial',
+          'not null' => TRUE,
+          'description' => 'Primary Key',
+        ],
+        'uid' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'description' => 'User ID',
+        ],
+        'login_time' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'description' => 'Login timestamp',
+        ],
+      ],
+      'primary key' => ['id'],
+    ]);
+  }
+}
