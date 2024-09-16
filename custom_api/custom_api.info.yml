@@ -1,0 +1,7 @@
+name: 'Custom API'
+type: module
+description: 'Fetches data from an external API and provides a REST resource.'
+core_version_requirement: ^10 || ^9
+package: Custom
+dependencies:
+  - drupal:rest
