@@ -5,3 +5,12 @@ custom_api.fetch_data:
     _title: 'Fetch Data'
   requirements:
     _permission: 'access content'
+
+
+custom_api.export:
+  path: '/custom-api/export'
+  defaults:
+    _form: '\Drupal\custom_api\Form\ExportForm'
+    _title: 'Export Node Fields'
+  requirements:
+    _permission: 'administer site configuration'

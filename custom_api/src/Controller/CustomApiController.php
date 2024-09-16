@@ -4,11 +4,12 @@ namespace Drupal\custom_api\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Queue\QueueFactory;
 use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Drupal\Core\Queue\QueueFactory;
+use Drupal\node\Entity\Node;
 
 /**
  * Custom API Controller to fetch and store data.
@@ -41,8 +42,14 @@ class CustomApiController extends ControllerBase {
    */
   public function fetchData() {
     $client = new Client();
-    $response = $client->get('https://api.restful-api.dev/objects');
-    $data = json_decode($response->getBody()->getContents(), TRUE);
+    try {
+      $response = $client->get('https://api.restful-api.dev/objects');
+      $data = json_decode($response->getBody()->getContents(), TRUE);
+    }
+    catch (\Exception $e) {
+      \Drupal::logger('custom_api')->error($e->getMessage());
+      return new JsonResponse(['error' => 'Failed to fetch data.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
 
     if (!empty($data)) {
       foreach ($data as $item) {
@@ -53,7 +60,25 @@ class CustomApiController extends ControllerBase {
         $capacity = isset($item['data']['capacity']) ? (int) $item['data']['capacity'] :
                    (isset($item['data']['Capacity']) ? (int) $item['data']['Capacity'] : 0);
 
-        if ($id !== NULL) {
+        // if ($id !== NULL) {
+          // Create or update the node with fetched data.
+          // $node = Node::load($id);
+          // if ($node) {
+          //   $node->set('title', $name);
+          //   $node->set('field_color', $color);
+          //   $node->set('field_capacity', $capacity);
+          //   $node->save();
+          // } else {
+            $node = Node::create([
+              'type' => 'custom_type',  // Define the content type.
+              'title' => $name,
+              'field_color' => $color,
+              'field_capacity' => $capacity,
+            ]);
+            $node->save();
+          // }
+
+          // Store in the custom table as well.
           $this->database->merge('custom_table')
             ->keys(['id' => $id])
             ->fields([
@@ -62,7 +87,7 @@ class CustomApiController extends ControllerBase {
               'capacity' => $capacity,
             ])
             ->execute();
-        }
+        // }
       }
 
       // Enqueue the task to invalidate the cache.
@@ -73,6 +98,6 @@ class CustomApiController extends ControllerBase {
       return new JsonResponse($data);
     }
 
-    return new JsonResponse(['error' => 'Failed to fetch data.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    return new JsonResponse(['error' => 'No data available.'], Response::HTTP_NO_CONTENT);
   }
 }

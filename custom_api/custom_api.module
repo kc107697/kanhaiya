@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Contains custom_api.module.
+ */
+
+/**
+ * Implements hook_cron().
+ */
+function custom_api_cron() {
+  // Get the queue service.
+  $queue = \Drupal::queue('custom_api_queue_worker');
+ 
+  // Process the queue items.
+  $queue->createQueue();
+  while ($item = $queue->claimItem()) {
+    // Process the item.
+    /** @var \Drupal\custom_api\Plugin\QueueWorker\CustomApiQueueWorker $worker */
+    $worker = \Drupal::service('plugin.manager.queue_worker')->createInstance('custom_api_queue_worker');
+    $worker->processItem($item->data);
+   
+    // Delete the item after processing.
+    // $queue->deleteItem($item);
+  }
+}
