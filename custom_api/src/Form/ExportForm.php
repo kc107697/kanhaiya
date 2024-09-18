@@ -52,36 +52,31 @@ class ExportForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Prepare batch processing to handle large data exports.
     $fields = $form_state->getValue('fields');
-    $batch_size = 5;
-
     $batch = [
       'title' => $this->t('Exporting CSV'),
-      'operations' => [],
-      'finished' => [$this, 'batchFinished'],
+      'operations' => [
+        [
+          [$this, 'batchProcess'],
+          [$fields],
+        ],
+      ],
+      'finished' => [$this, 'batchFinished']
     ];
-
-    // Get total number of nodes.
-    $max = \Drupal::entityQuery('node')->accessCheck(TRUE)->count()->execute();
-
-    // Create batch operations based on the batch size.
-    for ($i = 0; $i < $max; $i += $batch_size) {
-      $batch['operations'][] = [
-        [$this, 'batchProcess'],
-        [$fields, $i, $batch_size],
-      ];
-    }
-
     batch_set($batch);
   }
 
   /**
    * Batch process callback.
    */
-  public function batchProcess(array $fields, $start, $batch_size, &$context) {
-    // Initialize the file on the first run.
+  public function batchProcess(array $fields, &$context) {
+    $batch_size = 2; // Number of nodes per batch.
+
+    // Initialize sandbox on the first run.
     if (empty($context['sandbox'])) {
+      // Initialize sandbox variables.
       $context['sandbox']['progress'] = 0;
-      $context['sandbox']['max'] = \Drupal::entityQuery('node')->accessCheck(TRUE)->count()->execute();
+      $total_nodes = \Drupal::entityQuery('node')->accessCheck(TRUE)->count()->execute();
+      $context['sandbox']['max'] = ceil($total_nodes / $batch_size); // Total iterations needed.
       $context['sandbox']['file_path'] = 'public://exported_data.csv';
 
       // Ensure the file path is valid.
@@ -112,11 +107,11 @@ class ExportForm extends FormBase {
       }
     }
 
-    // Process nodes in batches.
+    // Process nodes and write data to the CSV.
     $nids = \Drupal::entityQuery('node')
       ->accessCheck(TRUE)
       ->condition('type', 'custom_type')  // Replace with your content type.
-      ->range($start, $batch_size)
+      ->range($context['sandbox']['progress'] * $batch_size, $batch_size)  // Batch size 2 nodes.
       ->execute();
 
     $nodes = Node::loadMultiple($nids);
@@ -129,7 +124,10 @@ class ExportForm extends FormBase {
       fputcsv($context['sandbox']['file'], $row);
     }
 
-    $context['sandbox']['progress'] += count($nids);
+    // Increment progress by 1 batch iteration.
+    $context['sandbox']['progress']++;
+
+    // Check if we've processed all nodes.
     if ($context['sandbox']['progress'] >= $context['sandbox']['max']) {
       fclose($context['sandbox']['file']);
       unset($context['sandbox']['file']); // Remove the file handle after closing.
@@ -146,7 +144,7 @@ class ExportForm extends FormBase {
     if ($success) {
       // Provide a link to download the CSV file.
       $public_path = PublicStream::basePath();
-      $file_path = $public_path.'/exported_data.csv';
+      $file_path = $public_path . '/exported_data.csv';
       \Drupal::messenger()->addMessage(t('CSV export completed.<a href="/'.$file_path.'">Download the file</a>'), 'status', TRUE);
     }
     else {
