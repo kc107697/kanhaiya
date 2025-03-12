@@ -1,0 +1,20 @@
+<?php
+
+use Drupal\user_content_tracker\Event\UserCustomLoginEvent;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_user_login().
+ */
+function user_content_tracker_user_login($account) {
+
+  $dispatcher = \Drupal::service('event_dispatcher');
+
+  // Get the user's IP address and login time.
+  $ip_address = \Drupal::request()->getClientIp();
+  $login_time = time();
+
+  // Dispatch the custom login event.
+  $event = new UserCustomLoginEvent($account, $ip_address, $login_time);
+  $dispatcher->dispatch($event, UserCustomLoginEvent::EVENT_NAME);
+}
